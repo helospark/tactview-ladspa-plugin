@@ -1,0 +1,7 @@
+{
+  "id": "ladspa-plugin",
+  "name": "Ladspa plugin",
+  "description": "Ladspa plugin",
+  "author": "helospark",
+  "version": "${project.version}"
+}

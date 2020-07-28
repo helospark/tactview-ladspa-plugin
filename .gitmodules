@@ -1,0 +1,3 @@
+[submodule "ladspa"]
+	path = ladspa
+	url = https://github.com/swh/ladspa.git
