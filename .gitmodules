@@ -1,3 +1,6 @@
 [submodule "ladspa"]
 	path = ladspa
 	url = https://github.com/swh/ladspa.git
+[submodule "lv2"]
+	path = lv2
+	url = https://github.com/lv2/lv2.git

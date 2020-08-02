@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,8 +10,8 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.helospark.ladspaplugin.nativelibrary.LadspaLoadPluginRequest;
-import com.helospark.ladspaplugin.nativelibrary.LadspaNativeLibrary;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaLoadPluginRequest;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaNativeLibrary;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;

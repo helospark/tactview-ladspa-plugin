@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 public enum LadspaParameterType {
     LADSPA_PORT_INPUT(1),

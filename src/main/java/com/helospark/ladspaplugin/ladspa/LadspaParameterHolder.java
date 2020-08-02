@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -9,9 +9,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.helospark.ladspaplugin.nativelibrary.LadspaNativeLibrary;
-import com.helospark.ladspaplugin.nativelibrary.LadspaParameter;
-import com.helospark.ladspaplugin.nativelibrary.LadspaRenderRequest;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaNativeLibrary;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaParameter;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaRenderRequest;
+import com.helospark.ladspaplugin.util.ByteBufferBackedFloatBuffer;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
 import com.helospark.tactview.core.save.LoadMetadata;
@@ -204,17 +205,6 @@ public class LadspaAudioEffect extends StatelessAudioEffect {
     @Override
     public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
         return null;
-    }
-
-    static class ByteBufferBackedFloatBuffer {
-        ByteBuffer attachment;
-        FloatBuffer buffer;
-
-        public ByteBufferBackedFloatBuffer(ByteBuffer attachment, FloatBuffer buffer) {
-            this.attachment = attachment;
-            this.buffer = buffer;
-        }
-
     }
 
 }

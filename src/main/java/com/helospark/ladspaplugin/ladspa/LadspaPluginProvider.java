@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 import java.io.File;
 import java.util.ArrayList;

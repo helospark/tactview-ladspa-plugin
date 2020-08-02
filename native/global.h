@@ -19,3 +19,4 @@
 # define EXPORTED
 #endif
 
+void* getFunction(void* handle, const char* functionName);

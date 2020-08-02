@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin.nativelibrary;
+package com.helospark.ladspaplugin.ladspa.nativelibrary;
 
 import com.helospark.tactview.core.util.jpaplugin.NativeImplementation;
 import com.sun.jna.Library;

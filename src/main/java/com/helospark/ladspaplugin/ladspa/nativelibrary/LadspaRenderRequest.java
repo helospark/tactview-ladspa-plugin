@@ -1,4 +1,4 @@
-package com.helospark.ladspaplugin.nativelibrary;
+package com.helospark.ladspaplugin.ladspa.nativelibrary;
 
 import java.nio.FloatBuffer;
 import java.util.List;

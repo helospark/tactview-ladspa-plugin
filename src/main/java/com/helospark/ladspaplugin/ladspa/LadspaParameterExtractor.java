@@ -1,10 +1,10 @@
-package com.helospark.ladspaplugin;
+package com.helospark.ladspaplugin.ladspa;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.helospark.ladspaplugin.nativelibrary.LadspaGetPluginDescriptionRequest;
-import com.helospark.ladspaplugin.nativelibrary.LadspaNativeLibrary;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaGetPluginDescriptionRequest;
+import com.helospark.ladspaplugin.ladspa.nativelibrary.LadspaNativeLibrary;
 import com.helospark.lightdi.annotation.Component;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
