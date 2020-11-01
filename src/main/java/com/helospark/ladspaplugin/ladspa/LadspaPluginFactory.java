@@ -70,9 +70,9 @@ public class LadspaPluginFactory {
                     StandardEffectFactory factory = StandardEffectFactory.builder()
                             .withFactory(request -> new LadspaAudioEffect(
                                     new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), ladspaNativeLibrary, memoryManager, pluginIndex, descriptor))
-                            .withRestoreFactory((node, loadMetadata) -> null)
-                            .withName(descriptor.name)
-                            .withSupportedEffectId(descriptor.name)
+                            .withRestoreFactory((node, loadMetadata) -> new LadspaAudioEffect(node, loadMetadata, ladspaNativeLibrary, memoryManager, pluginIndex, descriptor))
+                            .withName(descriptor.name + "-ladspa")
+                            .withSupportedEffectId(descriptor.name + "-ladspa")
                             .withSupportedClipTypes(List.of(TimelineClipType.AUDIO))
                             .withEffectType(TimelineEffectType.AUDIO_EFFECT)
                             .withIsFullWidth(true)

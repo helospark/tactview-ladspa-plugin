@@ -34,7 +34,7 @@ import com.helospark.ladspaplugin.lv2.parameter.PluginParameter;
 import com.helospark.ladspaplugin.lv2.parameter.PluginParameterChannel;
 import com.helospark.ladspaplugin.lv2.parameter.PluginProperty;
 import com.helospark.ladspaplugin.lv2.parameter.ScalePoint;
-import com.helospark.ladspaplugin.lv2.plugin.Lv2Plugin;
+import com.helospark.ladspaplugin.lv2.plugin.Lv2AudioEffect;
 import com.helospark.lightdi.LightDiContext;
 import com.helospark.lightdi.annotation.Bean;
 import com.helospark.lightdi.annotation.Configuration;
@@ -90,8 +90,8 @@ public class Lv2PluginFactory {
                     populatePlugin(rdfModel, st.getSubject(), plugin);
 
                     StandardEffectFactory factory = StandardEffectFactory.builder()
-                            .withFactory(request -> new Lv2Plugin(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), lv2NativeLibrary, memoryManager, plugin))
-                            .withRestoreFactory((node, loadMetadata) -> null)
+                            .withFactory(request -> new Lv2AudioEffect(new TimelineInterval(request.getPosition(), TimelineLength.ofMillis(10000)), lv2NativeLibrary, memoryManager, plugin))
+                            .withRestoreFactory((node, loadMetadata) -> new Lv2AudioEffect(node, loadMetadata, lv2NativeLibrary, memoryManager, plugin))
                             .withName(plugin.name + "-lv2")
                             .withSupportedEffectId(plugin.name)
                             .withSupportedClipTypes(List.of(TimelineClipType.AUDIO))

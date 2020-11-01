@@ -25,9 +25,10 @@ import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.threading.SingleThreadedRenderable;
 
-public class LadspaAudioEffect extends StatelessAudioEffect {
-    Map<Integer, Integer> sampleRateToInstanceId = new ConcurrentHashMap<>();
+public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThreadedRenderable {
+    private final Map<Integer, Integer> sampleRateToInstanceId = new ConcurrentHashMap<>();
 
     private final LadspaNativeLibrary library;
     private final MemoryManager memoryManager;
@@ -48,6 +49,23 @@ public class LadspaAudioEffect extends StatelessAudioEffect {
 
     public LadspaAudioEffect(JsonNode node, LoadMetadata loadMetadata, LadspaNativeLibrary library, MemoryManager memoryManager, int pluginId, LadspaDescriptorHolder descriptor) {
         super(node, loadMetadata);
+
+        // TODO: load parameters
+
+        this.library = library;
+        this.memoryManager = memoryManager;
+        this.pluginId = pluginId;
+        this.descriptor = descriptor;
+    }
+
+    public LadspaAudioEffect(LadspaAudioEffect statelessAudioEffect, CloneRequestMetadata cloneRequestMetadata, LadspaNativeLibrary library, MemoryManager memoryManager, int pluginId,
+            LadspaDescriptorHolder descriptor) {
+        super(statelessAudioEffect, cloneRequestMetadata);
+
+        for (var param : providers.entrySet()) {
+            this.providers.put(param.getKey(), param.getValue().deepClone());
+        }
+
         this.library = library;
         this.memoryManager = memoryManager;
         this.pluginId = pluginId;
@@ -175,16 +193,19 @@ public class LadspaAudioEffect extends StatelessAudioEffect {
 
     @Override
     protected void initializeValueProviderInternal() {
-        int index = 0;
-        for (var parameter : descriptor.parameters) {
+        if (providers.isEmpty()) {
+            int index = 0;
+            for (var parameter : descriptor.parameters) {
 
-            // input and output automatically appended
-            if (!parameter.parameterTypes.contains(LadspaParameterType.LADSPA_PORT_AUDIO)) {
-                DoubleProvider provider = new DoubleProvider(parameter.lowerValue, parameter.upperValue, new MultiKeyframeBasedDoubleInterpolator((parameter.lowerValue + parameter.upperValue) / 2.0));
-                providers.put(index, provider);
+                // input and output automatically appended
+                if (!parameter.parameterTypes.contains(LadspaParameterType.LADSPA_PORT_AUDIO)) {
+                    DoubleProvider provider = new DoubleProvider(parameter.lowerValue, parameter.upperValue,
+                            new MultiKeyframeBasedDoubleInterpolator((parameter.lowerValue + parameter.upperValue) / 2.0));
+                    providers.put(index, provider);
+                }
+
+                ++index;
             }
-
-            ++index;
         }
     }
 
@@ -204,7 +225,12 @@ public class LadspaAudioEffect extends StatelessAudioEffect {
 
     @Override
     public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
-        return null;
+        return new LadspaAudioEffect(this, cloneRequestMetadata, library, memoryManager, pluginId, descriptor);
+    }
+
+    @Override
+    public void onStartRender() {
+        // todo: clear buffer and reActivate
     }
 
 }

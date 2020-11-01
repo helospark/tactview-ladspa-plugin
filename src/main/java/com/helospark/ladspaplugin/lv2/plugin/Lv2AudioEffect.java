@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.helospark.ladspaplugin.lv2.nativelibrary.Lv2ChannelData;
 import com.helospark.ladspaplugin.lv2.nativelibrary.Lv2IntatiateRequest;
 import com.helospark.ladspaplugin.lv2.nativelibrary.Lv2NativeLibrary;
@@ -23,6 +24,7 @@ import com.helospark.ladspaplugin.lv2.parameter.ScalePoint;
 import com.helospark.ladspaplugin.util.ByteBufferBackedFloatBuffer;
 import com.helospark.tactview.core.clone.CloneRequestMetadata;
 import com.helospark.tactview.core.decoder.framecache.MemoryManager;
+import com.helospark.tactview.core.save.LoadMetadata;
 import com.helospark.tactview.core.timeline.AudioFrameResult;
 import com.helospark.tactview.core.timeline.StatelessEffect;
 import com.helospark.tactview.core.timeline.TimelineInterval;
@@ -35,8 +37,9 @@ import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.St
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.BooleanProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.ValueListProvider;
+import com.helospark.tactview.core.timeline.threading.SingleThreadedRenderable;
 
-public class Lv2Plugin extends StatelessAudioEffect {
+public class Lv2AudioEffect extends StatelessAudioEffect implements SingleThreadedRenderable {
     private final Object lock = new Object();
 
     private final Lv2NativeLibrary library;
@@ -44,12 +47,36 @@ public class Lv2Plugin extends StatelessAudioEffect {
     private final PluginProperty pluginParameter;
 
     private final Map<Integer, KeyframeableEffect> idToProvider = new LinkedHashMap<>();
-    private final Map<Integer, PluginParameter> idToParameter = new LinkedHashMap<>();
+    private Map<Integer, PluginParameter> idToParameter = new LinkedHashMap<>();
 
     private final Map<Integer, Integer> sampleRateToInstanceId = new ConcurrentHashMap<>();
 
-    public Lv2Plugin(TimelineInterval interval, Lv2NativeLibrary library, MemoryManager memoryManager, PluginProperty pluginParameter) {
+    public Lv2AudioEffect(TimelineInterval interval, Lv2NativeLibrary library, MemoryManager memoryManager, PluginProperty pluginParameter) {
         super(interval);
+
+        this.library = library;
+        this.memoryManager = memoryManager;
+        this.pluginParameter = pluginParameter;
+    }
+
+    public Lv2AudioEffect(JsonNode node, LoadMetadata loadMetadata, Lv2NativeLibrary library, MemoryManager memoryManager, PluginProperty pluginParameter) {
+        super(node, loadMetadata);
+
+        // TODO: load parameters
+
+        this.library = library;
+        this.memoryManager = memoryManager;
+        this.pluginParameter = pluginParameter;
+    }
+
+    public Lv2AudioEffect(Lv2AudioEffect statelessAudioEffect, CloneRequestMetadata cloneRequestMetadata, Lv2NativeLibrary library, MemoryManager memoryManager, PluginProperty pluginParameter) {
+        super(statelessAudioEffect, cloneRequestMetadata);
+
+        this.idToParameter = statelessAudioEffect.idToParameter;
+
+        for (var entry : idToProvider.entrySet()) {
+            idToProvider.put(entry.getKey(), entry.getValue().deepClone());
+        }
 
         this.library = library;
         this.memoryManager = memoryManager;
@@ -269,7 +296,11 @@ public class Lv2Plugin extends StatelessAudioEffect {
 
     @Override
     public StatelessEffect cloneEffect(CloneRequestMetadata cloneRequestMetadata) {
-        // TODO Auto-generated method stub
-        return null;
+        return new Lv2AudioEffect(interval, library, memoryManager, pluginParameter);
+    }
+
+    @Override
+    public void onStartRender() {
+        // todo: clear buffer and reActivate
     }
 }
