@@ -29,3 +29,8 @@ dependency-reduced-pom.xml
 .vscode
 *.out
 *.exe
+
+# Eclipse
+.classpath
+.project
+.settings

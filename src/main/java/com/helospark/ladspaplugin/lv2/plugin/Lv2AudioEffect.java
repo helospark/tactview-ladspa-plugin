@@ -75,7 +75,7 @@ public class Lv2AudioEffect extends StatelessAudioEffect implements SingleThread
         this.idToParameter = statelessAudioEffect.idToParameter;
 
         for (var entry : idToProvider.entrySet()) {
-            idToProvider.put(entry.getKey(), entry.getValue().deepClone());
+            idToProvider.put(entry.getKey(), entry.getValue().deepClone(cloneRequestMetadata));
         }
 
         this.library = library;

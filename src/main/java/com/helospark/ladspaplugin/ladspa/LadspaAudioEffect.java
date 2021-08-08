@@ -63,7 +63,7 @@ public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThr
         super(statelessAudioEffect, cloneRequestMetadata);
 
         for (var param : providers.entrySet()) {
-            this.providers.put(param.getKey(), param.getValue().deepClone());
+            this.providers.put(param.getKey(), param.getValue().deepClone(cloneRequestMetadata));
         }
 
         this.library = library;
