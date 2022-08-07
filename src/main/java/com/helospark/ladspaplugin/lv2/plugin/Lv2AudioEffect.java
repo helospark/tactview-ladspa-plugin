@@ -163,11 +163,11 @@ public class Lv2AudioEffect extends StatelessAudioEffect implements SingleThread
             double value = 0.0;
 
             if (keyframeableEffect instanceof DoubleProvider) {
-                value = ((DoubleProvider) keyframeableEffect).getValueAt(input.getEffectPosition());
+                value = ((DoubleProvider) keyframeableEffect).getValueAt(input.getEffectPosition(), input.getEvaluationContext());
             } else if (keyframeableEffect instanceof BooleanProvider) {
-                value = ((BooleanProvider) keyframeableEffect).getValueAt(input.getEffectPosition()) ? 1.0 : 0.0;
+                value = ((BooleanProvider) keyframeableEffect).getValueAt(input.getEffectPosition(), input.getEvaluationContext()) ? 1.0 : 0.0;
             } else if (keyframeableEffect instanceof ValueListProvider) {
-                value = ((ValueListProvider<ScalePoint>) keyframeableEffect).getValueAt(input.getEffectPosition()).getValue();
+                value = ((ValueListProvider<ScalePoint>) keyframeableEffect).getValueAt(input.getEffectPosition(), input.getEvaluationContext()).getValue();
             } else {
                 System.out.println("Unknown type " + keyframeableEffect.getClass());
             }

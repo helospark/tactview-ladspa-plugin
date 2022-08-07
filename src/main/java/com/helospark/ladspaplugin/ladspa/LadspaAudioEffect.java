@@ -25,6 +25,7 @@ import com.helospark.tactview.core.timeline.audioeffect.StatelessAudioEffect;
 import com.helospark.tactview.core.timeline.effect.interpolation.ValueProviderDescriptor;
 import com.helospark.tactview.core.timeline.effect.interpolation.interpolator.MultiKeyframeBasedDoubleInterpolator;
 import com.helospark.tactview.core.timeline.effect.interpolation.provider.DoubleProvider;
+import com.helospark.tactview.core.timeline.effect.interpolation.provider.evaluator.EvaluationContext;
 import com.helospark.tactview.core.timeline.threading.SingleThreadedRenderable;
 
 public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThreadedRenderable {
@@ -89,14 +90,16 @@ public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThr
 
         int sampleCount = input.getInput().getNumberSamples();
 
-        ByteBufferBackedFloatBuffer outputRightBuffer = null;
-        ByteBufferBackedFloatBuffer inputRightBuffer = null;
-
         ByteBufferBackedFloatBuffer outputLeftBuffer = requestFloatBuffer(sampleCount);
         ByteBufferBackedFloatBuffer inputLeftBuffer = convertToFloatBuffer(input, 0);
 
-        boolean hasRightChannel = descriptor.channelCount > 1;
-        if (hasRightChannel) {
+        ByteBufferBackedFloatBuffer outputRightBuffer = null;
+        ByteBufferBackedFloatBuffer inputRightBuffer = null;
+
+        boolean effectHasRightChannel = descriptor.channelCount > 1;
+        boolean inputHasRightChannel = input.getInput().getChannels().size() > 1;
+
+        if (inputHasRightChannel) {
             outputRightBuffer = requestFloatBuffer(sampleCount);
             inputRightBuffer = convertToFloatBuffer(input, 1);
         }
@@ -108,30 +111,39 @@ public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThr
         renderRequest.sampleCount = sampleCount;
 
         renderRequest.parameters = new LadspaParameter();
-        fillParameters(input.getEffectPosition(), renderRequest.parameters);
+        fillParameters(input.getEffectPosition(), renderRequest.parameters, input.getEvaluationContext());
 
         renderRequest.numberOfParametersDefined = providers.size();
 
-        if (hasRightChannel) {
+        if (effectHasRightChannel) {
             renderRequest.outputRight = outputRightBuffer.buffer;
             renderRequest.inputRight = inputRightBuffer.buffer;
         }
 
         library.render(renderRequest);
 
+        if (!effectHasRightChannel && inputHasRightChannel) {
+            renderRequest.inputLeft = inputRightBuffer.buffer;
+            renderRequest.outputLeft = outputRightBuffer.buffer;
+
+            library.render(renderRequest);
+        }
+
         AudioFrameResult result = convertToResult(input, outputLeftBuffer, outputRightBuffer);
 
         memoryManager.returnBuffer(outputLeftBuffer.attachment);
         memoryManager.returnBuffer(inputLeftBuffer.attachment);
-        if (hasRightChannel) {
+        if (outputRightBuffer != null) {
             memoryManager.returnBuffer(outputRightBuffer.attachment);
+        }
+        if (inputRightBuffer != null) {
             memoryManager.returnBuffer(inputRightBuffer.attachment);
         }
 
         return result;
     }
 
-    private void fillParameters(TimelinePosition position, LadspaParameter parameters) {
+    private void fillParameters(TimelinePosition position, LadspaParameter parameters, EvaluationContext evaluationContext) {
         int size = providers.size();
 
         if (size <= 0) {
@@ -143,7 +155,7 @@ public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThr
         int index = 0;
         for (var entry : providers.entrySet()) {
             result[index].index = entry.getKey();
-            result[index].value = entry.getValue().getValueAt(position).floatValue();
+            result[index].value = entry.getValue().getValueAt(position, evaluationContext).floatValue();
 
             ++index;
         }
@@ -158,16 +170,15 @@ public class LadspaAudioEffect extends StatelessAudioEffect implements SingleThr
     }
 
     private AudioFrameResult convertToResult(AudioEffectRequest input, ByteBufferBackedFloatBuffer outputLeftBuffer, ByteBufferBackedFloatBuffer outputRightBuffer) {
-        int bytesPerSample = input.getInput().getBytesPerSample();
-
         AudioFrameResult result = AudioFrameResult.sameSizeAndFormatAs(input.getInput());
 
-        for (int i = 0; i < input.getInput().getNumberSamples(); ++i) {
-            result.setSampleAt(0, i, (int) (outputLeftBuffer.buffer.get(i) * (1 << (bytesPerSample * 8 - 1))));
+        int numberOfSamples = input.getInput().getNumberSamples();
+        for (int i = 0; i < numberOfSamples; ++i) {
+            result.setNormalizedSampleAt(0, i, outputLeftBuffer.buffer.get(i));
         }
         if (outputRightBuffer != null) {
-            for (int i = 0; i < input.getInput().getNumberSamples(); ++i) {
-                result.setSampleAt(1, i, (int) (outputRightBuffer.buffer.get(i) * (1 << (bytesPerSample * 8 - 1))));
+            for (int i = 0; i < numberOfSamples; ++i) {
+                result.setNormalizedSampleAt(1, i, outputRightBuffer.buffer.get(i));
             }
         }
 
